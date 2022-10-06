@@ -1,1 +1,1 @@
-# agh-spatial-datbase
+# agh-spatial-database
