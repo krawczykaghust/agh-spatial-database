@@ -4,7 +4,7 @@ CREATE EXTENSION postgis;
 
 -- 2. Tworzenie tabeli Drogi
 
-CREATE TABLE roads(id INT, name VARCHAR(30), geom GEOMETRY);
+CREATE TABLE roads(id INT PRIMARY KEY, name VARCHAR(30), geom GEOMETRY);
 
 -- Dodawanie elementow
 
@@ -17,38 +17,38 @@ INSERT INTO roads VALUES
 SELECT * FROM roads;
 
 -- 3. Tworzenie tabeli Pktinfo
-CREATE TABLE points(id INT, name CHAR(1), geom GEOMETRY);
+CREATE TABLE points(id INT PRIMARY KEY	, name CHAR(1), geom GEOMETRY, liczprac INT);
 
 -- Dodawanie elementow
 INSERT INTO points VALUES
 -- a. G
-(1, 'G', ST_GeomFromText('POINT(1 3.5)', 0)),
+(1, 'G', ST_GeomFromText('POINT(1 3.5)', 0), 5),
 -- b. H
-(2, 'H', ST_GeomFromText('POINT(5.5 1.5)', 0)),
+(2, 'H', ST_GeomFromText('POINT(5.5 1.5)', 0), 2),
 -- c. I 
-(3, 'I', ST_GeomFromText('POINT(9.5 6)', 0)),
+(3, 'I', ST_GeomFromText('POINT(9.5 6)', 0), 3),
 -- d. J
-(4, 'J', ST_GeomFromText('POINT(6.5 6)', 0)),
+(4, 'J', ST_GeomFromText('POINT(6.5 6)', 0), 4),
 -- e. K
-(5, 'K', ST_GeomFromText('POINT(6 9.5)', 0));
+(5, 'K', ST_GeomFromText('POINT(6 9.5)', 0), 1);
 
 SELECT * FROM POINTS
 
 -- 4. Tworzenie tabeli Budynki
-CREATE TABLE buildings(id INT, name CHAR(9), geom GEOMETRY);
+CREATE TABLE buildings(id INT PRIMARY KEY, name CHAR(9), geom GEOMETRY, height INT);
 
 -- Dodawanie elementow
 INSERT INTO buildings VALUES
 -- a. Building A
-(1, 'BuildingA', ST_GeomFromText('POLYGON((8 1.5, 10.5 1.5, 10.5 4, 8 4, 8 1.5))', 0)),
+(1, 'BuildingA', ST_GeomFromText('POLYGON((8 1.5, 10.5 1.5, 10.5 4, 8 4, 8 1.5))', 0), 15),
 -- b. Building B
-(2, 'BuildingB', ST_GeomFromText('POLYGON((4 5, 6 5, 6 7, 4 7, 4 5))', 0)),
+(2, 'BuildingB', ST_GeomFromText('POLYGON((4 5, 6 5, 6 7, 4 7, 4 5))', 0), 45),
 -- c. Building C
-(3, 'BuildingC', ST_GeomFromText('POLYGON((3 6, 5 6, 5 8, 3 8, 3 6))', 0)),
+(3, 'BuildingC', ST_GeomFromText('POLYGON((3 6, 5 6, 5 8, 3 8, 3 6))', 0), 30),
 -- d. Building D
-(4, 'BuildingD', ST_GeomFromText('POLYGON((9 8, 10 8, 10 9, 9 9, 9 8))', 0)),
+(4, 'BuildingD', ST_GeomFromText('POLYGON((9 8, 10 8, 10 9, 9 9, 9 8))', 0), 5),
 -- e. Building F
-(5, 'BuildingF', ST_GeomFromText('POLYGON((1 1, 2 1, 2 2, 1 2, 1 1))', 0));
+(5, 'BuildingF', ST_GeomFromText('POLYGON((1 1, 2 1, 2 2, 1 2, 1 1))', 0), 10);
 -- ZADANIA
 
 SELECT * FROM buildings;
@@ -60,7 +60,7 @@ FROM roads;
 
 -- 2. Wypisz geometrię (WKT), pole powierzchni oraz obwód poligonu reprezentującego BuildingA.
 SELECT
-	geom AS WKT_Geometry,
+	ST_AsText(geom) AS WKT_Geometry,
 	ST_AREA(geom) AS Area,
 	ST_Perimeter(geom) AS Perimeter
 FROM buildings
@@ -102,8 +102,7 @@ WHERE buildings_b.name = 'BuildingB' AND
 
 -- 7. Wybierz te budynki, których centroid (ST_Centroid) znajduje się powyżej drogi RoadX.
 SELECT
-	b.name,
-	b.geom
+	b.name
 FROM buildings AS b, roads AS r
 WHERE ST_Y(ST_CENTROID(b.geom)) > ST_Y(ST_CENTROID(r.geom)) AND
 r.name = 'RoadX';
