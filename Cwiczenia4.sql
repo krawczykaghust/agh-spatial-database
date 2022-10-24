@@ -66,16 +66,15 @@ WHERE
 -- 7. Napisz zapytanie, które zwróci sumaryczne pole powierzchni poligonów reprezentujących
 -- poszczególne typy drzew znajdujących się na obszarze tundry i bagien (swamps).
 
+
 SELECT
 	t.vegdesc,
-	(SUM(ST_Area(t.geom)) / 1000000) as area_km2
+	SUM(t.area_km2)
 FROM trees as t, tundra as tu, swamp as s
-WHERE 
+WHERE
 	ST_Contains(t.geom, tu.geom) OR
 	ST_Contains(t.geom, s.geom)
 GROUP BY t.vegdesc
-
-
 
 
 	
