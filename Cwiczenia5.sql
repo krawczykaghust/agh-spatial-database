@@ -15,11 +15,17 @@ b2019.polygon_id = b2018.polygon_id
 
 -- Version 2
 
-SELECT * FROM T2019_KAR_BUILDINGS AS b2019
+
+CREATE TABLE new_buildings AS
+(
+	SELECT * FROM T2019_KAR_BUILDINGS AS b2019
 WHERE b2019.gid NOT IN (
 	SELECT DISTINCT(b2019.gid) FROM T2019_KAR_BUILDINGS AS b2019, T2018_KAR_BUILDINGS AS b2018
 	WHERE ST_Equals(b2019.geom, b2018.geom)
-)
+))
+
+SELECT * FROM new_buildings
+
 
 
 -- 2. Zaimportuj dane dotyczące POIs (Points of Interest) z obu lat:
@@ -32,14 +38,11 @@ SELECT * FROM T2019_KAR_POI_TABLE
 
 SELECT * FROM T2018_KAR_POI_TABLE
 
-SELECT COUNT(DISTINCT(poi2019.poi_id)) FROM T2019_KAR_POI_TABLE AS poi2019, T2019_KAR_BUILDINGS AS b2019, T2018_KAR_BUILDINGS AS b2018
-WHERE poi2019.gid NOT IN (
-	SELECT DISTINCT(poi2019.gid) FROM T2019_KAR_POI_TABLE AS poi2019, T2018_KAR_POI_TABLE AS poi2018
-	WHERE ST_Equals(poi2019.geom, poi2018.geom)
-	) AND
-	ST_Equals(b2019.geom, b2018.geom) = false AND
-	b2019.polygon_id = b2018.polygon_id AND
-	ST_DWithin(poi2019.geom, b2019.geom, 500)
+SELECT DISTINCT(poi2019.geom) FROM T2019_KAR_POI_TABLE as poi2019, new_buildings as nb
+WHERE poi2019.poi_id NOT IN(
+	SELECT poi2018.poi_id FROM T2018_KAR_POI_TABLE AS poi2018
+) AND ST_DWithin(poi2019.geom, nb.geom, 500)
+
 
 -- 3. Utwórz nową tabelę o nazwie ‘streets_reprojected’, która zawierać będzie dane z tabeli
 -- T2019_KAR_STREETS przetransformowane do układu współrzędnych DHDN.Berlin/Cassini.
@@ -49,6 +52,7 @@ CREATE TABLE streets_reprojected AS (
 	SELECT gid, link_id, st_name, ref_in_id, nref_in_id, func_class, speed_cat, fr_speed_l, to_speed_l, dir_travel, ST_Transform(geom, 3068) as geom
 	FROM T2019_KAR_STREETS
 )
+
 
 SELECT * FROM streets_reprojected
 
@@ -76,7 +80,7 @@ DROP TABLE input_points
 -- 5. Zaktualizuj dane w tabeli ‘input_points’ tak, aby punkty te były w układzie współrzędnych
 -- DHDN.Berlin/Cassini. Wyświetl współrzędne za pomocą funkcji ST_AsText().
 
-UPDATE input_points SET geom = ST_Transform(ST_SetSRID(geom, 4326), 3068);
+UPDATE input_points SET geom = ST_Transform(geom, 3068);
 ALTER TABLE input_points ALTER COLUMN geom TYPE geometry(POINT, 3068);
 
 SELECT
