@@ -101,7 +101,7 @@ WITH r AS (
 )
 SELECT
 	r.rid, ST_MapAlgebra(
-		r.rast, 1,
+		r.rast, 8,
 		r.rast, 4,
 		'([rast2.val] - [rast1.val]) / ([rast2.val] + [rast1.val])::float','32BF'
 	) AS rast
@@ -123,8 +123,6 @@ SELECT AddRasterConstraints('rasters'::name,
 'sentinel2_ndvi'::name,'rast'::name);
 
 -- 11. Wyeksportuj obliczony i przycięty wskaźnik NDWI do GeoTIFF.
-
--- COPY (SELECT ST_AsTiff(r.rast) FROM rasters.lake_district_ndvi AS r) TO 'C:/Kacper/Studia Semestr 5/Bazy Danych Przestrzennych/Cwiczenia/Cwiczenia 7/ndvi.tif'
 
 CREATE TABLE tmp_out AS
 SELECT lo_from_bytea(0,
